@@ -6,6 +6,8 @@ The app lets a reviewer submit prompts, watch each generation move through Luma'
 
 **What it is not:** an internal Luma evaluation tool, a claim about Luma's production systems, a SaaS product, or a replacement for formal model evaluation.
 
+**Live demo:** https://dreamcheck.onrender.com/ (Render free tier — may take ~30 s to wake from cold start)
+
 ---
 
 ## Why this exists
