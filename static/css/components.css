@@ -1,0 +1,198 @@
+/* ── Ticker ─────────────────────────────────────────────── */
+.ticker-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--paper-dim);
+  font-size: 0.8125rem;
+  margin-top: 0.375rem;
+}
+.ticker-wrap .ticker-label { font-size: 0.75rem; }
+
+.ticker {
+  position: relative;
+  display: inline-block;
+  width: 5.5rem;
+  height: 1.25em;
+  overflow: hidden;
+  vertical-align: middle;
+}
+.ticker-state {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  letter-spacing: 0.04em;
+  position: absolute;
+  left: 0;
+  opacity: 0;
+  animation: ticker-fade 3s ease-in-out infinite;
+  animation-delay: calc(var(--i) * 1s);
+}
+.ticker-state--queued   { color: var(--dreaming); }
+.ticker-state--dreaming { color: var(--dreaming); }
+.ticker-state--completed { color: var(--verdict-accept); }
+
+@keyframes ticker-fade {
+  0%   { opacity: 0; transform: translateY(5px); }
+  8%   { opacity: 1; transform: translateY(0); }
+  28%  { opacity: 1; transform: translateY(0); }
+  36%  { opacity: 0; transform: translateY(-5px); }
+  100% { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-state { animation: none; opacity: 0; }
+  .ticker-state--completed { opacity: 1; }
+}
+
+/* ── State pill ─────────────────────────────────────────── */
+.state-pill {
+  display: inline-block;
+  padding: 0.125rem 0.5rem;
+  border-radius: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+.state-pill--queued    { background: color-mix(in srgb, var(--dreaming) 12%, transparent);       color: var(--dreaming); }
+.state-pill--dreaming  { background: color-mix(in srgb, var(--dreaming) 12%, transparent);       color: var(--dreaming); }
+.state-pill--completed { background: color-mix(in srgb, var(--verdict-accept) 12%, transparent); color: var(--verdict-accept); }
+.state-pill--failed    { background: color-mix(in srgb, var(--failed) 12%, transparent);         color: var(--failed); }
+.state-pill--accept    { background: color-mix(in srgb, var(--verdict-accept) 12%, transparent); color: var(--verdict-accept); }
+.state-pill--modify    { background: color-mix(in srgb, var(--verdict-modify) 12%, transparent); color: var(--verdict-modify); }
+.state-pill--reject    { background: color-mix(in srgb, var(--verdict-reject) 12%, transparent); color: var(--verdict-reject); }
+
+/* ── Verdict strip — left border on cards ───────────────── */
+.verdict-strip {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  border-radius: 8px 0 0 8px;
+}
+.verdict-strip--pending  { background: var(--line); }
+.verdict-strip--dreaming { background: var(--dreaming); }
+.verdict-strip--accept   { background: var(--verdict-accept); }
+.verdict-strip--modify   { background: var(--verdict-modify); }
+.verdict-strip--reject   { background: var(--verdict-reject); }
+.verdict-strip--failed   { background: var(--failed); }
+
+/* ── Verdict bar — stacked proportional bar in stats ────── */
+.verdict-bar {
+  display: flex;
+  height: 6px;
+  border-radius: 3px;
+  overflow: hidden;
+  background: var(--line);
+  width: 120px;
+}
+.verdict-bar__seg { height: 100%; }
+.verdict-bar__seg--accept { background: var(--verdict-accept); }
+.verdict-bar__seg--modify { background: var(--verdict-modify); }
+.verdict-bar__seg--reject { background: var(--verdict-reject); }
+
+/* ── Cards with left strip ──────────────────────────────── */
+.card-strip {
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+/* ── Submit page — post-submit tracker card ─────────────── */
+.tracker-card {
+  max-width: 640px;
+}
+.tracker-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+.tracker-meta {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--paper-dim);
+  margin-bottom: 0.25rem;
+}
+.tracker-prompt {
+  font-size: 0.9375rem;
+  line-height: 1.5;
+}
+.tracker-id {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--paper-dim);
+  margin-top: 0.5rem;
+  word-break: break-all;
+}
+.tracker-asset {
+  border-radius: 6px;
+  overflow: hidden;
+  margin-top: 0.5rem;
+  background: var(--ink);
+}
+.tracker-asset img {
+  width: 100%;
+  display: block;
+  border-radius: 6px;
+}
+
+/* ── Queue page — review cards ──────────────────────────── */
+.queue-card {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+.queue-card:focus { outline: 2px solid var(--dreaming); outline-offset: 2px; }
+.queue-asset {
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--ink);
+  aspect-ratio: 1;
+}
+.queue-asset img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.queue-asset-placeholder {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.queue-asset-placeholder img { width: 100%; height: 100%; object-fit: cover; }
+.queue-controls { display: flex; flex-direction: column; gap: 0.75rem; }
+.queue-prompt-pattern {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--paper-dim);
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
+  margin-bottom: 0.25rem;
+}
+.queue-prompt { font-size: 0.9375rem; line-height: 1.5; margin-bottom: 0.25rem; }
+.queue-buttons { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+@media (max-width: 600px) {
+  .queue-card { grid-template-columns: 1fr; }
+  .queue-asset { aspect-ratio: 16/9; }
+}
+
+/* ── Stats page ─────────────────────────────────────────── */
+.stat-card { text-align: center; }
+.stat-label { color: var(--paper-dim); font-size: 0.8125rem; margin-bottom: 0.375rem; }
+.stat-sub   { color: var(--paper-dim); font-size: 0.8125rem; margin-top: 0.375rem; }
+.pattern-row-bar { padding-top: 0.375rem; }
+
+/* ── Empty states ───────────────────────────────────────── */
+.empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--paper-dim);
+}
+.empty-state p { margin: 0; }
+.empty-icon {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  color: var(--line);
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.1em;
+}

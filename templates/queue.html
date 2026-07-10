@@ -2,10 +2,13 @@
 {% block title %}Review Queue{% endblock %}
 
 {% block content %}
-<h1>Review Queue</h1>
-<p class="subtitle">Completed generations awaiting a decision. Use A / M / R as keyboard shortcuts.</p>
+<h1>Review queue</h1>
+<p class="subtitle">
+  Completed generations awaiting a decision.
+  <span class="mono" style="color:var(--paper-dim);font-size:0.75rem">A / M / R</span> on a focused card.
+</p>
 
-<div id="queue-status" class="msg msg-info" style="display:none"></div>
+<div id="queue-status" style="display:none"></div>
 <div id="queue-container"></div>
 {% endblock %}
 
@@ -19,7 +22,6 @@ async function loadQueue() {
     const items = await res.json();
     const container = document.getElementById('queue-container');
 
-    // Remove cards for items that have been reviewed
     for (const id of Object.keys(rendered)) {
       if (!items.find(g => g.id === id)) {
         const el = document.getElementById('card-' + id);
@@ -28,7 +30,6 @@ async function loadQueue() {
       }
     }
 
-    // Add new cards
     for (const gen of items) {
       if (rendered[gen.id]) continue;
       rendered[gen.id] = true;
@@ -38,89 +39,95 @@ async function loadQueue() {
     const status = document.getElementById('queue-status');
     if (items.length === 0) {
       status.style.display = '';
-      status.textContent = 'No completed generations awaiting review.';
+      status.className = 'empty-state';
+      status.innerHTML = `
+        <div class="empty-icon mono">— — —</div>
+        <p>No completed generations awaiting review.</p>
+        <p style="margin-top:0.5rem;font-size:0.875rem">
+          <a href="/">Submit a prompt</a> to get started.
+        </p>`;
     } else {
       status.style.display = 'none';
     }
-  } catch(e) { /* keep polling */ }
+  } catch (_) { /* keep polling */ }
 }
 
 function buildCard(gen) {
   const asset = gen.asset_url
-    ? `<img src="${gen.asset_url}" alt="generation" style="width:100%;border-radius:6px;display:block">`
-    : `<div style="height:200px;background:var(--bg);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px">no asset</div>`;
+    ? `<img src="${escHtml(gen.asset_url)}" alt="generated image">`
+    : `<img src="/static/placeholder.svg" alt="no asset">`;
+
+  const pattern = gen.prompt_pattern || 'other';
 
   return `
-<div class="card" id="card-${gen.id}" data-id="${gen.id}" tabindex="0" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
-  <div>
-    ${asset}
-  </div>
-  <div style="display:flex;flex-direction:column;gap:12px">
+<div class="card card-strip queue-card" id="card-${gen.id}" data-id="${gen.id}" tabindex="0">
+  <div class="verdict-strip verdict-strip--pending"></div>
+  <div class="queue-asset">${asset}</div>
+  <div class="queue-controls">
     <div>
-      <span class="badge badge-${gen.prompt_pattern ? gen.prompt_pattern.replace(' ','-') : 'other'}"
-            style="font-size:11px;margin-bottom:6px;display:inline-block">${escHtml(gen.prompt_pattern || 'other')}</span>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:2px">${escHtml(gen.model)}</div>
-      <div style="font-size:14px">${escHtml(gen.prompt)}</div>
+      <div class="queue-prompt-pattern">${escHtml(pattern)}</div>
+      <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.375rem">
+        <span class="state-pill state-pill--${escHtml(gen.model === 'ray-2' ? 'modify' : 'completed')}"
+              style="font-size:0.6875rem">${escHtml(gen.model)}</span>
+      </div>
+      <div class="queue-prompt">${escHtml(gen.prompt)}</div>
     </div>
-    <div>
-      <label class="label" for="note-${gen.id}">Note <span style="color:var(--muted)">(required for modify/reject)</span></label>
-      <textarea id="note-${gen.id}" rows="2" placeholder="What works or needs changing…"></textarea>
+    <div class="field" style="margin-bottom:0.5rem">
+      <label class="field-label" for="note-${gen.id}">
+        Note <span class="mono" style="color:var(--paper-dim);font-size:0.7rem">(required for modify / reject)</span>
+      </label>
+      <textarea id="note-${gen.id}" rows="2"
+        placeholder="What works or needs changing…"></textarea>
     </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-accept btn-sm" onclick="submitReview('${gen.id}','accept')">✓ Accept (A)</button>
-      <button class="btn btn-modify btn-sm" onclick="submitReview('${gen.id}','modify')">~ Modify (M)</button>
-      <button class="btn btn-reject btn-sm" onclick="submitReview('${gen.id}','reject')">✕ Reject (R)</button>
+    <div class="queue-buttons">
+      <button class="btn btn-accept btn-sm"  onclick="submitReview('${gen.id}','accept')">Accept (A)</button>
+      <button class="btn btn-modify btn-sm"  onclick="submitReview('${gen.id}','modify')">Modify (M)</button>
+      <button class="btn btn-reject btn-sm"  onclick="submitReview('${gen.id}','reject')">Reject (R)</button>
     </div>
-    <div style="font-size:11px;color:var(--muted)">ID: ${gen.id}</div>
+    <div class="tracker-id">id: ${escHtml(gen.id)}</div>
   </div>
 </div>`;
 }
 
 async function submitReview(id, decision) {
-  const note = document.getElementById('note-' + id).value.trim() || null;
+  const note = document.getElementById('note-' + id)?.value.trim() || null;
   if ((decision === 'modify' || decision === 'reject') && !note) {
-    flash('A note is required for modify and reject decisions.', 'error');
+    flash('A note is required for modify and reject.', 'error');
     return;
   }
   try {
     const res = await fetch(`/generations/${id}/review`, {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({decision, note})
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ decision, note })
     });
     const data = await res.json();
-    if (!res.ok) {
-      flash(data.detail || 'Error submitting review.', 'error');
-      return;
-    }
+    if (!res.ok) { flash(data.detail || 'Error submitting review.', 'error'); return; }
+
     flash(`Marked as ${decision}.`, 'success');
     const card = document.getElementById('card-' + id);
     if (card) {
-      card.style.opacity = '0.4';
-      card.style.transition = 'opacity .3s';
-      setTimeout(() => { card.remove(); delete rendered[id]; }, 400);
+      const strip = card.querySelector('.verdict-strip');
+      if (strip) strip.className = `verdict-strip verdict-strip--${decision}`;
+      card.style.transition = 'opacity 0.35s';
+      card.style.opacity = '0.3';
+      setTimeout(() => { card.remove(); delete rendered[id]; }, 380);
     }
-  } catch(e) {
+  } catch (e) {
     flash('Network error: ' + e.message, 'error');
   }
 }
 
-// Keyboard shortcuts on focused card
 document.addEventListener('keydown', e => {
   if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
-  const focused = document.querySelector('.card:focus');
+  const focused = document.querySelector('.queue-card:focus');
   if (!focused) return;
   const id = focused.dataset.id;
   if (!id) return;
-  if (e.key === 'a' || e.key === 'A') submitReview(id, 'accept');
-  if (e.key === 'm' || e.key === 'M') submitReview(id, 'modify');
-  if (e.key === 'r' || e.key === 'R') submitReview(id, 'reject');
+  if (e.key === 'a' || e.key === 'A') { e.preventDefault(); submitReview(id, 'accept'); }
+  if (e.key === 'm' || e.key === 'M') { e.preventDefault(); submitReview(id, 'modify'); }
+  if (e.key === 'r' || e.key === 'R') { e.preventDefault(); submitReview(id, 'reject'); }
 });
-
-function escHtml(s) {
-  if (!s) return '';
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
 
 loadQueue();
 setInterval(loadQueue, 4000);

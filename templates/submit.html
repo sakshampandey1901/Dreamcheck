@@ -2,106 +2,130 @@
 {% block title %}Submit{% endblock %}
 
 {% block content %}
-<h1>Submit a Generation</h1>
-<p class="subtitle">Enter a prompt and model — the mock client simulates queued → dreaming → completed over ~5–15 s.</p>
+<div style="max-width:640px">
+  <h1>Submit a generation</h1>
+  <div class="ticker-wrap" aria-label="Generation lifecycle">
+    <span class="ticker-label mono" style="color:var(--paper-dim)">lifecycle:</span>
+    <div class="ticker" aria-hidden="true">
+      <span class="ticker-state ticker-state--queued"    style="--i:0">queued</span>
+      <span class="ticker-state ticker-state--dreaming"  style="--i:1">dreaming</span>
+      <span class="ticker-state ticker-state--completed" style="--i:2">completed</span>
+    </div>
+  </div>
+  <p class="subtitle" style="margin-top:1.25rem">
+    Enter a prompt — the mock client transitions states in ~5–15 s.
+  </p>
 
-<div class="card" style="max-width:600px">
-  <div class="field">
-    <label class="label" for="prompt">Prompt</label>
-    <textarea id="prompt" rows="3" placeholder="cinematic aerial shot of..."></textarea>
+  <div class="card">
+    <div class="field">
+      <label class="field-label" for="prompt">Prompt</label>
+      <textarea id="prompt" rows="3"
+        placeholder="cinematic aerial shot of Tokyo at dusk, neon reflections on wet streets…"></textarea>
+    </div>
+    <div class="field">
+      <label class="field-label" for="model">Model</label>
+      <select id="model">
+        <option value="ray-flash-2">ray-flash-2</option>
+        <option value="ray-2">ray-2</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" id="submit-btn" onclick="submitGen()">
+      Submit generation
+    </button>
   </div>
-  <div class="field">
-    <label class="label" for="model">Model</label>
-    <select id="model">
-      <option value="ray-flash-2">ray-flash-2</option>
-      <option value="ray-2">ray-2</option>
-    </select>
-  </div>
-  <button class="btn btn-primary" id="submit-btn" onclick="submitGen()">Submit</button>
 </div>
 
-<div id="result-area"></div>
+<div id="result-area" style="max-width:640px;margin-top:0.5rem"></div>
 {% endblock %}
 
 {% block scripts %}
+<script src="/static/js/ticker.js"></script>
 <script>
 async function submitGen() {
   const prompt = document.getElementById('prompt').value.trim();
   if (!prompt) { flash('Prompt cannot be empty.', 'error'); return; }
   const model = document.getElementById('model').value;
-  document.getElementById('submit-btn').disabled = true;
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
 
   try {
     const res = await fetch('/generations', {
       method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({prompt, model})
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt, model })
     });
     const data = await res.json();
-    if (!res.ok) {
-      flash(data.detail || 'Error submitting generation.', 'error');
-      return;
-    }
-    showTracker(data.id, prompt, model);
+    if (!res.ok) { flash(data.detail || 'Error submitting generation.', 'error'); return; }
     document.getElementById('prompt').value = '';
-    flash('Generation submitted!', 'success');
-  } catch(e) {
+    flash('Generation submitted.', 'success');
+    showTracker(data.id, prompt, model);
+  } catch (e) {
     flash('Network error: ' + e.message, 'error');
   } finally {
-    document.getElementById('submit-btn').disabled = false;
+    btn.disabled = false;
   }
 }
 
 function showTracker(id, prompt, model) {
   const area = document.getElementById('result-area');
   const card = document.createElement('div');
-  card.className = 'card';
-  card.style.maxWidth = '600px';
+  card.className = 'card card-strip tracker-card';
   card.id = 'tracker-' + id;
   card.innerHTML = `
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
-      <div>
-        <div style="font-size:13px;color:var(--muted);margin-bottom:4px">${model}</div>
-        <div style="font-size:14px;margin-bottom:8px">${escHtml(prompt)}</div>
+    <div class="verdict-strip verdict-strip--dreaming" id="strip-${id}"></div>
+    <div class="tracker-header">
+      <div style="flex:1;min-width:0">
+        <div class="tracker-meta">${escHtml(model)}</div>
+        <div class="tracker-prompt">${escHtml(prompt)}</div>
       </div>
-      <span class="badge badge-queued" id="state-${id}">queued</span>
+      <span class="state-pill state-pill--queued" id="pill-${id}">queued</span>
     </div>
-    <div id="asset-${id}"></div>
-    <div style="font-size:12px;color:var(--muted);margin-top:6px">ID: ${id}</div>
+    <div id="asset-${id}" class="tracker-asset" style="display:none"></div>
+    <div class="tracker-id mono">id: ${escHtml(id)}</div>
   `;
   area.prepend(card);
-  pollState(id);
+  pollTracker(id);
 }
 
-async function pollState(id) {
+async function pollTracker(id) {
   const terminal = new Set(['completed', 'failed']);
   for (;;) {
     await new Promise(r => setTimeout(r, 2000));
     try {
-      const res = await fetch('/generations?state=&unreviewed=false');
+      const res = await fetch('/generations');
       const list = await res.json();
       const gen = list.find(g => g.id === id);
       if (!gen) continue;
-      const badge = document.getElementById('state-' + id);
-      if (badge) badge.className = `badge badge-${gen.state}`;
-      if (badge) badge.textContent = gen.state;
+
+      const pill = document.getElementById('pill-' + id);
+      const strip = document.getElementById('strip-' + id);
+      if (pill) { pill.className = `state-pill state-pill--${gen.state}`; pill.textContent = gen.state; }
+      if (strip) {
+        strip.className = 'verdict-strip ' + (
+          gen.state === 'completed' ? 'verdict-strip--accept' :
+          gen.state === 'failed'    ? 'verdict-strip--failed' :
+                                      'verdict-strip--dreaming'
+        );
+      }
+
       if (gen.state === 'completed' && gen.asset_url) {
         const assetDiv = document.getElementById('asset-' + id);
         if (assetDiv && !assetDiv.querySelector('img')) {
-          assetDiv.innerHTML = `<img src="${gen.asset_url}" alt="generation" style="max-width:100%;border-radius:4px;margin-top:8px">`;
+          assetDiv.style.display = '';
+          assetDiv.innerHTML = `<img src="${escHtml(gen.asset_url)}" alt="generated image">`;
         }
       }
       if (gen.state === 'failed' && gen.failure_reason) {
         const assetDiv = document.getElementById('asset-' + id);
-        if (assetDiv) assetDiv.innerHTML = `<div class="msg msg-error" style="margin-top:8px;font-size:13px">${escHtml(gen.failure_reason)}</div>`;
+        if (assetDiv) {
+          assetDiv.style.display = '';
+          assetDiv.innerHTML =
+            `<div class="msg msg-error" style="margin:0;border-radius:6px">${escHtml(gen.failure_reason)}</div>`;
+        }
       }
       if (terminal.has(gen.state)) break;
-    } catch(e) { /* keep polling */ }
+    } catch (_) { /* keep polling */ }
   }
-}
-
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 </script>
 {% endblock %}

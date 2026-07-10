@@ -1,11 +1,18 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
-  <rect width="512" height="512" fill="#1a1a2e"/>
-  <rect x="96" y="96" width="320" height="240" rx="8" fill="#16213e"/>
-  <polygon points="196,276 256,176 316,276" fill="#0f3460" opacity="0.8"/>
-  <circle cx="340" cy="176" r="28" fill="#0f3460" opacity="0.8"/>
-  <rect x="96" y="356" width="320" height="12" rx="4" fill="#e94560" opacity="0.4"/>
-  <text x="256" y="430" text-anchor="middle" fill="#8892b0"
-        font-family="system-ui,sans-serif" font-size="14">
-    Placeholder — swap in Phase 4
+  <rect width="512" height="512" fill="#0E0E11"/>
+  <rect x="1" y="1" width="510" height="510" rx="7" fill="none" stroke="#232228" stroke-width="2"/>
+  <!-- image frame suggestion -->
+  <rect x="80" y="100" width="352" height="240" rx="6" fill="#13131A" stroke="#232228" stroke-width="1"/>
+  <!-- mountain silhouette -->
+  <polygon points="160,300 256,160 352,300" fill="#232228"/>
+  <polygon points="220,300 296,200 372,300" fill="#1a1a22"/>
+  <!-- sun circle -->
+  <circle cx="340" cy="160" r="26" fill="#E8A33D" opacity="0.25"/>
+  <!-- divider -->
+  <rect x="80" y="360" width="352" height="1" fill="#232228"/>
+  <!-- label -->
+  <text x="256" y="400" text-anchor="middle" fill="#A6A39B"
+        font-family="'Courier New', monospace" font-size="12" letter-spacing="0.08em">
+    no asset — swap in phase 4
   </text>
 </svg>

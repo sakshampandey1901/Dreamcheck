@@ -1,54 +1,78 @@
 {% extends "base.html" %}
+{% from "partials/verdict_strip.html" import verdict_bar %}
+{% from "partials/state_pill.html" import state_pill %}
 {% block title %}Stats{% endblock %}
 
 {% block content %}
-<h1>Rollup Stats</h1>
+<h1>Rollup stats</h1>
 <p class="subtitle">Derived from stored reviews — no hardcoded values.</p>
 
 {% if stats.overall.total_reviewed %}
 
-<div class="grid-2" style="margin-bottom:24px">
-  <div class="card" style="text-align:center">
-    <div style="color:var(--muted);font-size:13px;margin-bottom:4px">Acceptance Rate</div>
-    <div class="stat-big" style="color:var(--green)">{{ stats.overall.acceptance_rate }}%</div>
-    <div style="font-size:13px;color:var(--muted);margin-top:4px">
-      {{ stats.overall.accepts }}A &nbsp; {{ stats.overall.modifies }}M &nbsp; {{ stats.overall.rejects }}R
-      &nbsp;/&nbsp; {{ stats.overall.total_reviewed }} reviewed
+<div class="grid-2" style="margin-bottom:1.5rem">
+  <div class="card stat-card">
+    <div class="stat-label">Acceptance rate</div>
+    <div class="stat-big" style="color:var(--verdict-accept)">
+      {{ stats.overall.acceptance_rate }}%
+    </div>
+    <div class="stat-sub mono">
+      {{ stats.overall.accepts }}A &nbsp;
+      {{ stats.overall.modifies }}M &nbsp;
+      {{ stats.overall.rejects }}R &nbsp;/&nbsp;
+      {{ stats.overall.total_reviewed }} reviewed
     </div>
   </div>
-  <div class="card" style="text-align:center">
-    <div style="color:var(--muted);font-size:13px;margin-bottom:4px">Median Time to Review</div>
+  <div class="card stat-card">
+    <div class="stat-label">Median time to review</div>
     {% if stats.median_seconds_to_review is not none %}
-      {% set m = (stats.median_seconds_to_review / 60)|round(1) %}
-      <div class="stat-big" style="color:var(--accent)">{{ m }} min</div>
+      {% set m = (stats.median_seconds_to_review / 60) | round(1) %}
+      <div class="stat-big" style="color:var(--dreaming)">{{ m }} min</div>
     {% else %}
-      <div class="stat-big" style="color:var(--muted)">—</div>
+      <div class="stat-big" style="color:var(--paper-dim)">—</div>
     {% endif %}
-    <div style="font-size:13px;color:var(--muted);margin-top:4px">from generation completed</div>
+    <div class="stat-sub">from generation completed</div>
   </div>
 </div>
 
-<h2>Per Prompt-Pattern</h2>
-<div class="card" style="padding:0;overflow:hidden;margin-bottom:24px">
+<div style="margin-bottom:1.5rem">
+  <h2>Overall verdict breakdown</h2>
+  <div class="card" style="padding:1rem">
+    <div style="margin-bottom:0.5rem">
+      {{ verdict_bar(stats.overall.accepts, stats.overall.modifies, stats.overall.rejects, stats.overall.total_reviewed) }}
+    </div>
+    <div style="display:flex;gap:1.25rem;font-size:0.8125rem">
+      <span style="color:var(--verdict-accept)">&#9632; accept</span>
+      <span style="color:var(--verdict-modify)">&#9632; modify</span>
+      <span style="color:var(--verdict-reject)">&#9632; reject</span>
+    </div>
+  </div>
+</div>
+
+<h2>Per prompt-pattern</h2>
+<div class="card" style="padding:0;overflow:hidden;margin-bottom:1.5rem">
   <table>
     <thead>
       <tr>
-        <th>Pattern</th><th>Accept</th><th>Modify</th><th>Reject</th><th>Total</th><th>Rate</th><th style="width:160px"></th>
+        <th>Pattern</th>
+        <th style="color:var(--verdict-accept)">A</th>
+        <th style="color:var(--verdict-modify)">M</th>
+        <th style="color:var(--verdict-reject)">R</th>
+        <th>Total</th>
+        <th>Rate</th>
+        <th style="width:140px"></th>
       </tr>
     </thead>
     <tbody>
     {% for p in stats.per_pattern %}
       <tr>
-        <td>{{ p.pattern }}</td>
-        <td style="color:var(--green)">{{ p.accepts }}</td>
-        <td style="color:var(--yellow)">{{ p.modifies }}</td>
-        <td style="color:var(--red)">{{ p.rejects }}</td>
+        <td class="mono" style="font-size:0.8125rem">{{ p.pattern }}</td>
+        <td style="color:var(--verdict-accept)">{{ p.accepts }}</td>
+        <td style="color:var(--verdict-modify)">{{ p.modifies }}</td>
+        <td style="color:var(--verdict-reject)">{{ p.rejects }}</td>
         <td>{{ p.total }}</td>
         <td><strong>{{ p.acceptance_rate }}%</strong></td>
-        <td>
-          <div style="background:var(--bg);border-radius:4px;height:8px;overflow:hidden">
-            <div style="background:var(--green);height:100%;width:{{ p.acceptance_rate }}%"></div>
-          </div>
+        <td class="pattern-row-bar">
+          {{ verdict_bar(p.accepts, p.modifies, p.rejects, p.total) }}
         </td>
       </tr>
     {% endfor %}
@@ -56,21 +80,32 @@
   </table>
 </div>
 
-<h2>Per Model</h2>
-<div class="card" style="padding:0;overflow:hidden;margin-bottom:24px">
+<h2>Per model</h2>
+<div class="card" style="padding:0;overflow:hidden;margin-bottom:1.5rem">
   <table>
     <thead>
-      <tr><th>Model</th><th>Accept</th><th>Modify</th><th>Reject</th><th>Total</th><th>Rate</th></tr>
+      <tr>
+        <th>Model</th>
+        <th style="color:var(--verdict-accept)">A</th>
+        <th style="color:var(--verdict-modify)">M</th>
+        <th style="color:var(--verdict-reject)">R</th>
+        <th>Total</th>
+        <th>Rate</th>
+        <th style="width:140px"></th>
+      </tr>
     </thead>
     <tbody>
     {% for m in stats.per_model %}
       <tr>
-        <td><code>{{ m.model }}</code></td>
-        <td style="color:var(--green)">{{ m.accepts }}</td>
-        <td style="color:var(--yellow)">{{ m.modifies }}</td>
-        <td style="color:var(--red)">{{ m.rejects }}</td>
+        <td>{{ state_pill(m.model) }}</td>
+        <td style="color:var(--verdict-accept)">{{ m.accepts }}</td>
+        <td style="color:var(--verdict-modify)">{{ m.modifies }}</td>
+        <td style="color:var(--verdict-reject)">{{ m.rejects }}</td>
         <td>{{ m.total }}</td>
         <td><strong>{{ m.acceptance_rate }}%</strong></td>
+        <td class="pattern-row-bar">
+          {{ verdict_bar(m.accepts, m.modifies, m.rejects, m.total) }}
+        </td>
       </tr>
     {% endfor %}
     </tbody>
@@ -78,18 +113,22 @@
 </div>
 
 {% if stats.rejection_notes %}
-<h2>Recent Modify / Reject Notes</h2>
+<h2>Recent modify / reject notes</h2>
 <div class="card" style="padding:0;overflow:hidden">
   <table>
     <thead>
-      <tr><th>Decision</th><th>Pattern</th><th>Note</th></tr>
+      <tr>
+        <th>Decision</th>
+        <th>Pattern</th>
+        <th>Note</th>
+      </tr>
     </thead>
     <tbody>
     {% for n in stats.rejection_notes %}
       <tr>
-        <td><span class="badge badge-{{ n.decision }}">{{ n.decision }}</span></td>
-        <td style="color:var(--muted);font-size:13px">{{ n.prompt_pattern }}</td>
-        <td style="font-size:13px">{{ n.note }}</td>
+        <td>{{ state_pill(n.decision) }}</td>
+        <td class="mono" style="font-size:0.75rem;color:var(--paper-dim)">{{ n.prompt_pattern }}</td>
+        <td style="font-size:0.875rem">{{ n.note }}</td>
       </tr>
     {% endfor %}
     </tbody>
@@ -98,6 +137,13 @@
 {% endif %}
 
 {% else %}
-<div class="msg msg-info">No reviews yet — submit some generations and review them to see stats.</div>
+<div class="empty-state" style="padding-top:4rem">
+  <div class="empty-icon mono">— — —</div>
+  <p>No reviews yet.</p>
+  <p style="margin-top:0.5rem;font-size:0.875rem">
+    <a href="/">Submit some generations</a> and review them to see stats.
+  </p>
+</div>
 {% endif %}
+
 {% endblock %}

@@ -1,0 +1,15 @@
+{% macro verdict_strip(state="pending") %}<div class="verdict-strip verdict-strip--{{ state }}"></div>{% endmacro %}
+
+{% macro verdict_bar(accepts, modifies, rejects, total) %}
+{% if total and total > 0 %}
+{% set a_pct = (accepts / total * 100) | round(1) %}
+{% set m_pct = (modifies / total * 100) | round(1) %}
+{% set r_pct = (rejects / total * 100) | round(1) %}
+<div class="verdict-bar" role="img"
+     aria-label="{{ accepts }} accepted, {{ modifies }} modified, {{ rejects }} rejected out of {{ total }}">
+  {% if accepts > 0 %}<div class="verdict-bar__seg verdict-bar__seg--accept" style="width:{{ a_pct }}%"></div>{% endif %}
+  {% if modifies > 0 %}<div class="verdict-bar__seg verdict-bar__seg--modify" style="width:{{ m_pct }}%"></div>{% endif %}
+  {% if rejects > 0 %}<div class="verdict-bar__seg verdict-bar__seg--reject" style="width:{{ r_pct }}%"></div>{% endif %}
+</div>
+{% endif %}
+{% endmacro %}
