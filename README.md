@@ -1,42 +1,57 @@
-# Dreamcheck — Luma Generation QA
+# Dreamcheck - Prompt QA for Luma API Workflows
 
+Dreamcheck is a small product-engineering tool for teams building features on top of [Luma's public API](https://docs.lumalabs.ai). It sits after "we can call the generation API" and before "we know which prompt patterns produce outputs worth shipping."
 
-A lightweight prompt-QA loop for product teams building on [Luma's API](https://docs.lumalabs.ai).
+The app lets a reviewer submit prompts, watch each generation move through Luma's public lifecycle (`queued -> dreaming -> completed | failed`), judge the completed output, and use stored review data to compare prompt patterns and models. The point is not to build an ML benchmark. The point is to make the product feedback loop visible, repeatable, and cheap to run.
 
-It is the layer between "we have API access" and "we know which prompt patterns reliably produce good outputs." You submit prompts, watch generations move through Luma's lifecycle (`queued → dreaming → completed | failed`), judge each output, and read rollup stats that show you which prompt patterns land and which don't.
+**What it is not:** an internal Luma evaluation tool, a claim about Luma's production systems, a SaaS product, or a replacement for formal model evaluation.
 
-**What it is NOT:** an internal tool for Luma's own eval process, a SaaS product, or an ML evaluation framework.
+---
+
+## Why this exists
+
+Generative API integrations usually fail in the gap between a successful API call and a reliable product experience. A product team needs to know which prompt structures work, where outputs need revision, and whether model choices are changing the acceptance rate.
+
+Dreamcheck demonstrates that loop with a deliberately small stack:
+
+- a mock-first Luma client that follows the public API lifecycle without spend
+- persisted generation state so polling survives app restarts
+- a review queue that captures human accept / modify / reject decisions
+- SQL-derived rollups instead of hardcoded demo metrics
+- one deployable FastAPI service with server-rendered pages
 
 ---
 
 ## How it works
 
 ```
-Submit prompt → mock (or real) Luma client creates a generation
-             → asyncio poller sweeps every 3 s, advances state in SQLite
-             → completed generation appears in review queue
-             → reviewer judges (accept / modify / reject) + optional note
-             → /stats derives acceptance rates by prompt pattern and model
+Submit prompt -> mock Luma client creates a generation through the same interface
+              -> asyncio poller sweeps every 3 s and advances state in SQLite
+              -> completed generation appears in the review queue
+              -> reviewer records accept / modify / reject plus an optional note
+              -> /stats derives acceptance rates by prompt pattern and model
 ```
 
 Three pages:
-- **Submit** (`/`) — enter a prompt and model
-- **Review queue** (`/queue`) — judge completed generations; keyboard shortcuts A / M / R
-- **Stats** (`/stats`) — per-pattern and per-model acceptance rates, rejection themes, median time-to-review
+- **Submit** (`/`) - enter a prompt and model
+- **Review queue** (`/queue`) - judge completed generations; keyboard shortcuts A / M / R
+- **Stats** (`/stats`) - per-pattern and per-model acceptance rates, rejection themes, median time-to-review
 
-Three API endpoints:
-- `POST /generations` — create a generation
-- `GET /generations` — list with optional `?state=` and `?unreviewed=true` filters
-- `POST /generations/{id}/review` — record a decision
-- `GET /stats` — SQL aggregates (JSON or HTML depending on Accept header)
+API endpoints:
+- `POST /generations` - create a generation
+- `GET /generations` - list with optional `?state=` and `?unreviewed=true` filters
+- `POST /generations/{id}/review` - record a decision
+- `GET /stats` - SQL aggregates (JSON or HTML depending on Accept header)
 
 ---
 
-## Mock-first approach
+## Mock-first API approach
 
 **Default mode is `LUMA_MODE=mock`.** No API key is required. The mock client simulates Luma's lifecycle deterministically (5–15 s per generation, ~10% failure rate) with state persisted in SQLite. This means you can demo and develop the full QA loop with zero spend.
 
-**To switch to the real Luma API:** set two env vars and restart — no code changes.
+The real API adapter is intentionally thin and config-gated. It exists to show that the app is built around the public Luma client contract, but the demo path should stay in mock mode unless you are intentionally testing with a real key.
+
+To enable the real adapter locally, set two env vars and restart:
 
 ```bash
 LUMA_MODE=real
@@ -62,6 +77,8 @@ Open `http://localhost:8000`. The app seeds 18 example generations with reviews 
 
 ## Deploy to Render (single service, free tier)
 
+The recommended public demo deployment uses mock mode. That keeps the app cost-safe and avoids putting a paid API key into the deployed environment.
+
 ### 1. Push to GitHub
 
 Make sure your repo is on GitHub and the working tree is clean.
@@ -80,11 +97,18 @@ Make sure your repo is on GitHub and the working tree is clean.
 |---|---|---|
 | `LUMA_MODE` | `mock` | Yes (set explicitly; default is mock) |
 | `DATABASE_PATH` | `/opt/render/project/src/dreamcheck.db` | Recommended (keeps DB in project dir) |
-| `LUMAAI_API_KEY` | *(your key)* | Only if `LUMA_MODE=real` |
 
 ### 4. Deploy
 
 Click **Deploy**. First deploy installs deps and starts the server. The app seeds example data on boot so stats work immediately.
+
+---
+
+## Security and deployment notes
+
+- Keep `LUMA_MODE=mock` for public demos unless you intentionally want to spend real API credits.
+- Do not commit `.env` or real API keys. Use `.env.example` for documented defaults and keep secrets in local or hosted environment settings.
+- This app intentionally has no authentication. Share deployed URLs with trusted reviewers or add an access layer before using it with real team data.
 
 ---
 
@@ -94,15 +118,16 @@ Click **Deploy**. First deploy installs deps and starts the server. The app seed
 - **Ephemeral disk on Render free tier.** SQLite is wiped on each restart. The seed-on-boot mechanism makes the app self-healing for demos, but real QA data from sessions is lost. Use a paid Render plan with a persistent disk if you need to keep data.
 - **Free-tier cold start.** Render free services sleep after ~15 min of inactivity; first request after sleep takes ~30 s.
 - **Mock generates placeholder SVGs, not real images.** Phase 4 (not yet done) swaps in real watermarked images from [dream-machine.lumalabs.ai](https://dream-machine.lumalabs.ai) (no card required). Until then, every generation shows the same gray placeholder.
-- **~10% mock failure rate.** Deterministic per generation ID. The failure is realistic (same `failure_reason` strings as real API) but not random.
+- **~10% mock failure rate.** Deterministic per generation ID. Failure reasons are realistic enough for the workflow, but they are simulated.
+- **Real adapter is opt-in.** The project is designed to exercise the public API shape without making paid API calls during normal development or demos.
 
 ---
 
 ## What would come next (modestly)
 
 - **Phase 4:** swap placeholder SVGs for real watermarked images from Luma's consumer tier; committed under `/static/seed/`
-- **Persistent disk:** Render paid plan or replace SQLite with a small managed Postgres to survive restarts
-- **Multi-reviewer:** add a `reviewer_id` column to reviews and a simple name field on submission — no full auth needed
+- **Persistent disk:** use Render persistent storage or another hosted volume if session data needs to survive restarts
+- **Multi-reviewer:** add a `reviewer_id` column to reviews and a simple name field on submission - no full auth needed
 - **CSV export:** one endpoint that dumps the reviews table so you can pull patterns into a spreadsheet
 
 ---
@@ -112,5 +137,5 @@ Click **Deploy**. First deploy installs deps and starts the server. The app seed
 - **Backend:** FastAPI + uvicorn
 - **Frontend:** Jinja2 templates + vanilla JS `fetch()` polling (no separate frontend deployment)
 - **DB:** SQLite with WAL mode, `CREATE TABLE IF NOT EXISTS` (no migrations)
-- **Async work:** one asyncio task — no Celery, no Redis, no queue infrastructure
+- **Async work:** one asyncio task - no Celery, no Redis, no queue infrastructure
 - **Deploy:** Render free tier, single service, one URL
