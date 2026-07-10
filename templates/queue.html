@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Review Queue{% endblock %}
+
+{% block content %}
+<h1>Review Queue</h1>
+<p class="subtitle">Completed generations awaiting a decision. Use A / M / R as keyboard shortcuts.</p>
+
+<div id="queue-status" class="msg msg-info" style="display:none"></div>
+<div id="queue-container"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let rendered = {};
+
+async function loadQueue() {
+  try {
+    const res = await fetch('/generations?state=completed&unreviewed=true');
+    const items = await res.json();
+    const container = document.getElementById('queue-container');
+
+    // Remove cards for items that have been reviewed
+    for (const id of Object.keys(rendered)) {
+      if (!items.find(g => g.id === id)) {
+        const el = document.getElementById('card-' + id);
+        if (el) el.remove();
+        delete rendered[id];
+      }
+    }
+
+    // Add new cards
+    for (const gen of items) {
+      if (rendered[gen.id]) continue;
+      rendered[gen.id] = true;
+      container.insertAdjacentHTML('afterbegin', buildCard(gen));
+    }
+
+    const status = document.getElementById('queue-status');
+    if (items.length === 0) {
+      status.style.display = '';
+      status.textContent = 'No completed generations awaiting review.';
+    } else {
+      status.style.display = 'none';
+    }
+  } catch(e) { /* keep polling */ }
+}
+
+function buildCard(gen) {
+  const asset = gen.asset_url
+    ? `<img src="${gen.asset_url}" alt="generation" style="width:100%;border-radius:6px;display:block">`
+    : `<div style="height:200px;background:var(--bg);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:13px">no asset</div>`;
+
+  return `
+<div class="card" id="card-${gen.id}" data-id="${gen.id}" tabindex="0" style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+  <div>
+    ${asset}
+  </div>
+  <div style="display:flex;flex-direction:column;gap:12px">
+    <div>
+      <span class="badge badge-${gen.prompt_pattern ? gen.prompt_pattern.replace(' ','-') : 'other'}"
+            style="font-size:11px;margin-bottom:6px;display:inline-block">${escHtml(gen.prompt_pattern || 'other')}</span>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:2px">${escHtml(gen.model)}</div>
+      <div style="font-size:14px">${escHtml(gen.prompt)}</div>
+    </div>
+    <div>
+      <label class="label" for="note-${gen.id}">Note <span style="color:var(--muted)">(required for modify/reject)</span></label>
+      <textarea id="note-${gen.id}" rows="2" placeholder="What works or needs changing…"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-accept btn-sm" onclick="submitReview('${gen.id}','accept')">✓ Accept (A)</button>
+      <button class="btn btn-modify btn-sm" onclick="submitReview('${gen.id}','modify')">~ Modify (M)</button>
+      <button class="btn btn-reject btn-sm" onclick="submitReview('${gen.id}','reject')">✕ Reject (R)</button>
+    </div>
+    <div style="font-size:11px;color:var(--muted)">ID: ${gen.id}</div>
+  </div>
+</div>`;
+}
+
+async function submitReview(id, decision) {
+  const note = document.getElementById('note-' + id).value.trim() || null;
+  if ((decision === 'modify' || decision === 'reject') && !note) {
+    flash('A note is required for modify and reject decisions.', 'error');
+    return;
+  }
+  try {
+    const res = await fetch(`/generations/${id}/review`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({decision, note})
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      flash(data.detail || 'Error submitting review.', 'error');
+      return;
+    }
+    flash(`Marked as ${decision}.`, 'success');
+    const card = document.getElementById('card-' + id);
+    if (card) {
+      card.style.opacity = '0.4';
+      card.style.transition = 'opacity .3s';
+      setTimeout(() => { card.remove(); delete rendered[id]; }, 400);
+    }
+  } catch(e) {
+    flash('Network error: ' + e.message, 'error');
+  }
+}
+
+// Keyboard shortcuts on focused card
+document.addEventListener('keydown', e => {
+  if (['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+  const focused = document.querySelector('.card:focus');
+  if (!focused) return;
+  const id = focused.dataset.id;
+  if (!id) return;
+  if (e.key === 'a' || e.key === 'A') submitReview(id, 'accept');
+  if (e.key === 'm' || e.key === 'M') submitReview(id, 'modify');
+  if (e.key === 'r' || e.key === 'R') submitReview(id, 'reject');
+});
+
+function escHtml(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+loadQueue();
+setInterval(loadQueue, 4000);
+</script>
+{% endblock %}
