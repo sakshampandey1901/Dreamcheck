@@ -5,7 +5,7 @@
 
 ## 1. Project identity (do not drift from this)
 
-A small, single-purpose portfolio project demonstrating full-stack ownership and correct async API integration to a Luma AI hiring manager. It is a **prompt-QA loop for a product team building on Luma's API** — the layer between "we have API access" and "we know which prompt patterns reliably produce good outputs."
+ It is a **prompt-QA loop for a product team building on Luma's API** — the layer between "we have API access" and "we know which prompt patterns reliably produce good outputs."
 
 It is NOT: an internal tool for Luma's own eval team, a SaaS product, a scale demo, or an ML expertise demo. The bar is *correctly working and clearly explained*. Every implementation choice must pass the test: "does this add signal, or just complexity?"
 
