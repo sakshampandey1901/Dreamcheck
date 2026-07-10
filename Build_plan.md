@@ -109,7 +109,8 @@ Env vars only: `LUMA_MODE` (default `mock`), `LUMAAI_API_KEY` (optional, unused 
 
 **Phase 4 — Real seed assets (optional):** swap placeholder URLs for committed free-tier images.
 
-**Phase 5 — Ship:** deploy to Render, write README.
+**Phase 5 — Ship:**
+ deploy to Render, write README.
 
 At each phase boundary: stop, confirm the simplest version satisfies the phase's purpose, cut anything beyond it.
 

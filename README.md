@@ -1,5 +1,6 @@
 # Dreamcheck — Luma Generation QA
 
+
 A lightweight prompt-QA loop for product teams building on [Luma's API](https://docs.lumalabs.ai).
 
 It is the layer between "we have API access" and "we know which prompt patterns reliably produce good outputs." You submit prompts, watch generations move through Luma's lifecycle (`queued → dreaming → completed | failed`), judge each output, and read rollup stats that show you which prompt patterns land and which don't.
