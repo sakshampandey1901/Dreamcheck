@@ -77,35 +77,6 @@ Open `http://localhost:8000`. The app seeds 18 example generations with reviews 
 
 ---
 
-## Deploy to Render (single service, free tier)
-
-The recommended public demo deployment uses mock mode. That keeps the app cost-safe and avoids putting a paid API key into the deployed environment.
-
-### 1. Push to GitHub
-
-Make sure your repo is on GitHub and the working tree is clean.
-
-### 2. Create a new Web Service on Render
-
-- **Repository:** your GitHub repo
-- **Branch:** `main`
-- **Runtime:** Python 3
-- **Build command:** `pip install -r requirements.txt`
-- **Start command:** `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-
-### 3. Set environment variables in Render dashboard
-
-| Variable | Value | Required |
-|---|---|---|
-| `LUMA_MODE` | `mock` | Yes (set explicitly; default is mock) |
-| `DATABASE_PATH` | `/opt/render/project/src/dreamcheck.db` | Recommended (keeps DB in project dir) |
-
-### 4. Deploy
-
-Click **Deploy**. First deploy installs deps and starts the server. The app seeds example data on boot so stats work immediately.
-
----
-
 ## Security and deployment notes
 
 - Keep `LUMA_MODE=mock` for public demos unless you intentionally want to spend real API credits.
