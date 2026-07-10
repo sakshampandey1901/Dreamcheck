@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: dreamcheck
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: LUMA_MODE
+        value: mock
+      - key: DATABASE_PATH
+        value: /opt/render/project/src/dreamcheck.db
