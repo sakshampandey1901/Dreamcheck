@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#1a1a2e"/>
+  <rect x="96" y="96" width="320" height="240" rx="8" fill="#16213e"/>
+  <polygon points="196,276 256,176 316,276" fill="#0f3460" opacity="0.8"/>
+  <circle cx="340" cy="176" r="28" fill="#0f3460" opacity="0.8"/>
+  <rect x="96" y="356" width="320" height="12" rx="4" fill="#e94560" opacity="0.4"/>
+  <text x="256" y="430" text-anchor="middle" fill="#8892b0"
+        font-family="system-ui,sans-serif" font-size="14">
+    Placeholder — swap in Phase 4
+  </text>
+</svg>

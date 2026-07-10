@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Submit{% endblock %}
+
+{% block content %}
+<h1>Submit a Generation</h1>
+<p class="subtitle">Enter a prompt and model — the mock client simulates queued → dreaming → completed over ~5–15 s.</p>
+
+<div class="card" style="max-width:600px">
+  <div class="field">
+    <label class="label" for="prompt">Prompt</label>
+    <textarea id="prompt" rows="3" placeholder="cinematic aerial shot of..."></textarea>
+  </div>
+  <div class="field">
+    <label class="label" for="model">Model</label>
+    <select id="model">
+      <option value="ray-flash-2">ray-flash-2</option>
+      <option value="ray-2">ray-2</option>
+    </select>
+  </div>
+  <button class="btn btn-primary" id="submit-btn" onclick="submitGen()">Submit</button>
+</div>
+
+<div id="result-area"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function submitGen() {
+  const prompt = document.getElementById('prompt').value.trim();
+  if (!prompt) { flash('Prompt cannot be empty.', 'error'); return; }
+  const model = document.getElementById('model').value;
+  document.getElementById('submit-btn').disabled = true;
+
+  try {
+    const res = await fetch('/generations', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({prompt, model})
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      flash(data.detail || 'Error submitting generation.', 'error');
+      return;
+    }
+    showTracker(data.id, prompt, model);
+    document.getElementById('prompt').value = '';
+    flash('Generation submitted!', 'success');
+  } catch(e) {
+    flash('Network error: ' + e.message, 'error');
+  } finally {
+    document.getElementById('submit-btn').disabled = false;
+  }
+}
+
+function showTracker(id, prompt, model) {
+  const area = document.getElementById('result-area');
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.style.maxWidth = '600px';
+  card.id = 'tracker-' + id;
+  card.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+      <div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:4px">${model}</div>
+        <div style="font-size:14px;margin-bottom:8px">${escHtml(prompt)}</div>
+      </div>
+      <span class="badge badge-queued" id="state-${id}">queued</span>
+    </div>
+    <div id="asset-${id}"></div>
+    <div style="font-size:12px;color:var(--muted);margin-top:6px">ID: ${id}</div>
+  `;
+  area.prepend(card);
+  pollState(id);
+}
+
+async function pollState(id) {
+  const terminal = new Set(['completed', 'failed']);
+  for (;;) {
+    await new Promise(r => setTimeout(r, 2000));
+    try {
+      const res = await fetch('/generations?state=&unreviewed=false');
+      const list = await res.json();
+      const gen = list.find(g => g.id === id);
+      if (!gen) continue;
+      const badge = document.getElementById('state-' + id);
+      if (badge) badge.className = `badge badge-${gen.state}`;
+      if (badge) badge.textContent = gen.state;
+      if (gen.state === 'completed' && gen.asset_url) {
+        const assetDiv = document.getElementById('asset-' + id);
+        if (assetDiv && !assetDiv.querySelector('img')) {
+          assetDiv.innerHTML = `<img src="${gen.asset_url}" alt="generation" style="max-width:100%;border-radius:4px;margin-top:8px">`;
+        }
+      }
+      if (gen.state === 'failed' && gen.failure_reason) {
+        const assetDiv = document.getElementById('asset-' + id);
+        if (assetDiv) assetDiv.innerHTML = `<div class="msg msg-error" style="margin-top:8px;font-size:13px">${escHtml(gen.failure_reason)}</div>`;
+      }
+      if (terminal.has(gen.state)) break;
+    } catch(e) { /* keep polling */ }
+  }
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+{% endblock %}
