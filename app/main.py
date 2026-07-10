@@ -186,9 +186,7 @@ async def stats(request: Request):
     data = _compute_stats()
     accept = request.headers.get("accept", "")
     if "text/html" in accept:
-        return templates.TemplateResponse(
-            "stats.html", {"request": request, "stats": data}
-        )
+        return templates.TemplateResponse(request, "stats.html", {"stats": data})
     return JSONResponse(data)
 
 
@@ -285,9 +283,9 @@ def _median(values: list) -> Optional[float]:
 
 @app.get("/", response_class=HTMLResponse)
 async def submit_page(request: Request):
-    return templates.TemplateResponse("submit.html", {"request": request})
+    return templates.TemplateResponse(request, "submit.html")
 
 
 @app.get("/queue", response_class=HTMLResponse)
 async def queue_page(request: Request):
-    return templates.TemplateResponse("queue.html", {"request": request})
+    return templates.TemplateResponse(request, "queue.html")
