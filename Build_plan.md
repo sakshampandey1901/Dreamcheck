@@ -115,7 +115,8 @@ At each phase boundary: stop, confirm the simplest version satisfies the phase's
 
 ---
 
-## 11. README requirements (framing is load-bearing)
+## 11. README r
+equirements (framing is load-bearing)
 
 - What it is: a lightweight prompt-QA loop for teams building on Luma's API — NOT a claim to improve Luma's internal eval process
 - Why it was built (learning by building on the real API contract), live link, architecture summary, stack
