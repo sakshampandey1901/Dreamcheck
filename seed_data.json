@@ -1,0 +1,311 @@
+[
+  {
+    "id": "seed-01",
+    "prompt": "cinematic aerial shot of Tokyo at dusk, neon reflections on wet streets, long exposure",
+    "model": "ray-flash-2",
+    "prompt_pattern": "cinematic aerial",
+    "state": "completed",
+    "failure_reason": null,
+    "asset_type": "image",
+    "asset_url": "/static/placeholder.svg",
+    "created_at": "2026-07-06T09:00:00",
+    "completed_at": "2026-07-06T09:00:12",
+    "review": {
+      "id": "rev-01",
+      "decision": "accept",
+      "note": "Scene specificity + wet-street lighting descriptor synergise well — reliable urban aerial pattern",
+      "created_at": "2026-07-06T09:02:20"
+    }
+  },
+  {
+    "id": "seed-02",
+    "prompt": "aerial view of Sahara sand dunes at sunrise, long directional shadows, warm amber palette",
+    "model": "ray-2",
+    "prompt_pattern": "cinematic aerial",
+    "state": "completed",
+    "failure_reason": null,
+    "asset_type": "image",
+    "asset_url": "/static/placeholder.svg",
+    "created_at": "2026-07-06T09:15:00",
+    "completed_at": "2026-07-06T09:15:11",
+    "review": {
+      "id": "rev-02",
+      "decision": "accept",
+      "note": "Directional-light + terrain specificity produces repeatable composition",
+      "created_at": "2026-07-06T09:45:30"
+    }
+  },
+  {
+    "id": "seed-03",
+    "prompt": "cinematic drone shot over Amazon rainforest canopy, morning mist rising, golden shafts of light",
+    "model": "ray-flash-2",
+    "prompt_pattern": "cinematic aerial",
+    "state": "completed",
+    "failure_reason": null,
+    "asset_type": "image",
+    "asset_url": "/static/placeholder.svg",
+    "created_at": "2026-07-06T10:00:00",
+    "completed_at": "2026-07-06T10:00:14",
+    "review": {
+      "id": "rev-03",
+      "decision": "accept",
+      "note": "Atmospheric element (mist) adds depth without over-constraining output",
+      "created_at": "2026-07-06T12:05:00"
+    }
+  },
+  {
+    "id": "seed-04",
+    "prompt": "aerial shot of city, tall buildings, sunset, dramatic, cinematic, photorealistic, 4k, ultra detailed",
+    "model": "ray-2",
+    "prompt_pattern": "cinematic aerial",
+    "state": "completed",
+    "failure_reason": null,
+    "asset_type": "image",
+    "asset_url": "/static/placeholder.svg",
+    "created_at": "2026-07-06T11:00:00",
+    "completed_at": "2026-07-06T11:00:09",
+    "review": {
+      "id": "rev-04",
+      "decision": "reject",
+      "note": "Keyword stacking without scene specificity — each generic modifier dilutes rather than focuses; output inconsistent across runs",
+      "created_at": "2026-07-06T13:10:00"
+    }
+  },
+  {
+    "id": "seed-05",
+    "prompt": "dramatic studio portrait of an elderly woodworker, harsh side lighting, sawdust in the air, dark background",
+    "model": "ray-flash-2",
+    "prompt_pattern": "portrait",
+    "state": "completed",
+    "failure_reason": null,
+    "asset_type": "image",
+    "asset_url": "/static/placeholder.svg",
+    "created_at": "2026-07-06T14:00:00",
+    "completed_at": "2026-07-06T14:00:13",
+    "review": {
+      "id": "rev-05",
+      "decision": "accept",
+      "note": "Lighting style + subject specificity + environmental detail (sawdust) produces strong mood — pattern scales to other craft subjects",
+      "created_at": "2026-07-06T14:03:00"
+    }
+  },
+  {
+    "id": "seed-06",
+    "prompt": "soft natural light portrait of a young researcher at a desk, bookshelves behind, shallow depth of field",
+    "model": "ray-2",
+    "prompt_pattern": "portrait",
+    "state": "completed",
+    "failure_reason": null,
+    "asset_type": "image",
+    "asset_url": "/static/placeholder.svg",
+    "created_at": "2026-07-07T09:00:00",
+    "completed_at": "2026-07-07T09:00:11",
+    "review": {
+      "id": "rev-06",
+      "decision": "accept",
+      "note": "Natural-light descriptor + background context grounds scene without over-specifying subject",
+      "created_at": "2026-07-07T09:35:00"
+    }
+  },
+  {
+    "id": "seed-07",
+    "prompt": "professional portrait of a woman, elegant, beautiful, studio lighting",
+    "model": "ray-flash-2",
+    "prompt_pattern": "portrait",
+    "state": "completed",
+    "failure_reason": null,
+    "asset_type": "image",
+    "asset_url": "/static/placeholder.svg",
+    "created_at": "2026-07-07T10:00:00",
+    "completed_at": "2026-07-07T10:00:12",
+    "review": {
+      "id": "rev-07",
+      "decision": "modify",
+      "note": "Too generic — add lighting direction (Rembrandt vs butterfly), mood (editorial vs corporate), and environmental anchor to make reusable as a pattern",
+      "created_at": "2026-07-07T12:00:00"
+    }
+  },
+  {
+    "id": "seed-08",
+    "prompt": "fluid simulation of crimson and gold ink dispersing in water, macro lens, high contrast black background",
+    "model": "ray-2",
+    "prompt_pattern": "abstract",
+    "state": "completed",
+    "failure_reason": null,
+    "asset_type": "image",
+    "asset_url": "/static/placeholder.svg",
+    "created_at": "2026-07-07T11:00:00",
+    "completed_at": "2026-07-07T11:00:10",
+    "review": {
+      "id": "rev-08",
+      "decision": "accept",
+      "note": "Material-physics anchor + specific palette + macro constraint is highly repeatable; model handles ink-in-water reliably",
+      "created_at": "2026-07-07T11:05:00"
+    }
+  },
+  {
+    "id": "seed-09",
+    "prompt": "geometric tessellation of hexagons in muted earth tones, subtle depth variation, architectural scale",
+    "model": "ray-flash-2",
+    "prompt_pattern": "abstract",
+    "state": "completed",
+    "failure_reason": null,
+    "asset_type": "image",
+    "asset_url": "/static/placeholder.svg",
+    "created_at": "2026-07-07T13:00:00",
+    "completed_at": "2026-07-07T13:00:13",
+    "review": {
+      "id": "rev-09",
+      "decision": "accept",
+      "note": "Precise geometric anchor with controlled palette works reliably; 'architectural scale' context keeps proportions consistent",
+      "created_at": "2026-07-07T15:10:00"
+    }
+  },
+  {
+    "id": "seed-10",
+    "prompt": "abstract swirling colors, vibrant, psychedelic, energy, flowing, beautiful",
+    "model": "ray-2",
+    "prompt_pattern": "abstract",
+    "state": "completed",
+    "failure_reason": null,
+    "asset_type": "image",
+    "asset_url": "/static/placeholder.svg",
+    "created_at": "2026-07-07T14:00:00",
+    "completed_at": "2026-07-07T14:00:09",
+    "review": {
+      "id": "rev-10",
+      "decision": "modify",
+      "note": "Vague descriptors produce inconsistent results — needs a material anchor (oil paint, liquid, light) and compositional constraint (radial, layered) to become a reusable pattern",
+      "created_at": "2026-07-07T16:00:00"
+    }
+  },
+  {
+    "id": "seed-11",
+    "prompt": "Scottish Highlands in autumn, overcast sky, a single stone cottage beside a loch, telephoto compression",
+    "model": "ray-flash-2",
+    "prompt_pattern": "landscape",
+    "state": "completed",
+    "failure_reason": null,
+    "asset_type": "image",
+    "asset_url": "/static/placeholder.svg",
+    "created_at": "2026-07-08T09:00:00",
+    "completed_at": "2026-07-08T09:00:11",
+    "review": {
+      "id": "rev-11",
+      "decision": "accept",
+      "note": "Specific location + season + unique subject element (cottage) + lens characteristic elevates above generic landscape; telephoto compression reliably flattens depth",
+      "created_at": "2026-07-08T11:00:00"
+    }
+  },
+  {
+    "id": "seed-12",
+    "prompt": "beautiful mountain landscape at sunset, dramatic sky, majestic peaks",
+    "model": "ray-2",
+    "prompt_pattern": "landscape",
+    "state": "completed",
+    "failure_reason": null,
+    "asset_type": "image",
+    "asset_url": "/static/placeholder.svg",
+    "created_at": "2026-07-08T10:00:00",
+    "completed_at": "2026-07-08T10:00:14",
+    "review": {
+      "id": "rev-12",
+      "decision": "reject",
+      "note": "No distinguishing elements — pattern too generic to produce repeatable signal; output varies wildly across seeds",
+      "created_at": "2026-07-08T12:00:00"
+    }
+  },
+  {
+    "id": "seed-13",
+    "prompt": "peaceful ocean view, waves, horizon, golden hour, serene",
+    "model": "ray-flash-2",
+    "prompt_pattern": "landscape",
+    "state": "completed",
+    "failure_reason": null,
+    "asset_type": "image",
+    "asset_url": "/static/placeholder.svg",
+    "created_at": "2026-07-08T11:00:00",
+    "completed_at": "2026-07-08T11:00:10",
+    "review": {
+      "id": "rev-13",
+      "decision": "reject",
+      "note": "Atmospheric modifiers without compositional specificity yield highly variable results — needs foreground element or vantage point to anchor composition",
+      "created_at": "2026-07-08T13:00:00"
+    }
+  },
+  {
+    "id": "seed-14",
+    "prompt": "minimalist product shot of a glass water bottle on white marble, soft diffused studio lighting, clean reflection below",
+    "model": "ray-2",
+    "prompt_pattern": "product shot",
+    "state": "completed",
+    "failure_reason": null,
+    "asset_type": "image",
+    "asset_url": "/static/placeholder.svg",
+    "created_at": "2026-07-08T13:00:00",
+    "completed_at": "2026-07-08T13:00:12",
+    "review": {
+      "id": "rev-14",
+      "decision": "accept",
+      "note": "Background material + lighting type + reflection = reliable commercial pattern; works across product categories",
+      "created_at": "2026-07-08T13:05:00"
+    }
+  },
+  {
+    "id": "seed-15",
+    "prompt": "top-down product flat lay of specialty coffee equipment on natural linen, soft morning window light, editorial style",
+    "model": "ray-flash-2",
+    "prompt_pattern": "product shot",
+    "state": "completed",
+    "failure_reason": null,
+    "asset_type": "image",
+    "asset_url": "/static/placeholder.svg",
+    "created_at": "2026-07-08T14:00:00",
+    "completed_at": "2026-07-08T14:00:11",
+    "review": {
+      "id": "rev-15",
+      "decision": "modify",
+      "note": "Angle + material + lighting produces consistent editorial aesthetic but needs a primary subject constraint — full equipment array creates cluttered compositions",
+      "created_at": "2026-07-08T14:30:00"
+    }
+  },
+  {
+    "id": "seed-16",
+    "prompt": "brutalist concrete library interior, shafts of natural light from skylights, long reading tables, monumental scale",
+    "model": "ray-2",
+    "prompt_pattern": "architectural",
+    "state": "failed",
+    "failure_reason": "Generation timed out after maximum retries",
+    "asset_type": "image",
+    "asset_url": null,
+    "created_at": "2026-07-08T15:00:00",
+    "completed_at": "2026-07-08T15:01:00",
+    "review": null
+  },
+  {
+    "id": "seed-17",
+    "prompt": "abstract data visualization landscape, floating network node graphs suspended in fog, bioluminescent blue tones",
+    "model": "ray-flash-2",
+    "prompt_pattern": "abstract",
+    "state": "failed",
+    "failure_reason": "Server error: upstream model temporarily unavailable",
+    "asset_type": "image",
+    "asset_url": null,
+    "created_at": "2026-07-08T15:30:00",
+    "completed_at": "2026-07-08T15:31:00",
+    "review": null
+  },
+  {
+    "id": "seed-18",
+    "prompt": "documentary portrait of a street musician, handheld camera aesthetic, shallow DOF, rain-soaked pavement",
+    "model": "ray-2",
+    "prompt_pattern": "portrait",
+    "state": "failed",
+    "failure_reason": "Invalid prompt: conflicting depth-of-field and motion-blur descriptors",
+    "asset_type": "image",
+    "asset_url": null,
+    "created_at": "2026-07-08T16:00:00",
+    "completed_at": "2026-07-08T16:00:45",
+    "review": null
+  }
+]
